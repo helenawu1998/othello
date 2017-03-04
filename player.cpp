@@ -4,6 +4,10 @@
 /* Evan
  * 3:51pm
  */
+
+ /* Evan
+  * 7:23pm
+  */
  
 /*
  * Constructor for the player; initialize everything here. The side your AI is
