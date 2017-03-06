@@ -34,6 +34,20 @@ public:
     void setBoard(char data[]);
     
     vector<Move> moves;
+    
+    static const int VERYGOOD = 10;
+    static const int GOOD = 5;
+    static const int VERYBAD = -100000;
+    static const int BAD = -10;
+    static const int NORMAL = 0;
+    int scores[8][8] = {{VERYGOOD, BAD, GOOD, GOOD, GOOD, GOOD, BAD, VERYGOOD},
+               {BAD, VERYBAD, NORMAL, NORMAL, NORMAL, NORMAL, VERYBAD, BAD},
+               {GOOD, NORMAL, NORMAL, NORMAL, NORMAL, NORMAL, NORMAL, GOOD},
+               {GOOD, NORMAL, NORMAL, NORMAL, NORMAL, NORMAL, NORMAL, GOOD},
+               {GOOD, NORMAL, NORMAL, NORMAL, NORMAL, NORMAL, NORMAL, GOOD},
+               {GOOD, NORMAL, NORMAL, NORMAL, NORMAL, NORMAL, NORMAL, GOOD},
+               {BAD, VERYBAD, NORMAL, NORMAL, NORMAL, NORMAL, VERYBAD, BAD},
+               {VERYGOOD, BAD, GOOD, GOOD, GOOD, GOOD, BAD, VERYGOOD}};
 };
 
 #endif

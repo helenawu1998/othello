@@ -3,6 +3,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <time.h>
+#include <map>
 
 using namespace std;
 
@@ -57,7 +58,9 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */
-      
+    
+    // Random player
+    /*
     board.doMove(opponentsMove, otherSide);
     
     vector<Move*> moves;
@@ -81,6 +84,37 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         
         board.doMove(moves[i], side);
         return moves[i];
+    }
+   
+    return nullptr;
+    */
+    
+    // Heuristic player
+    
+    board.doMove(opponentsMove, otherSide);
+    
+    map<int, Move*> moves;
+       
+    if (board.hasMoves(side))
+    {
+        for (int x = 0; x < 8; x++)
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                Move *m = new Move(x, y);
+                if (board.checkMove(m, side))
+                {
+                    moves[board.scores[x][y]] = m;
+                }
+            }
+        }
+        
+        map<int, Move*>::iterator it;
+    
+        Move * best = moves.rbegin()->second;
+        
+        board.doMove(best, side);
+        return best;
     }
    
     return nullptr;
