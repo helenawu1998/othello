@@ -54,15 +54,19 @@ Player::~Player() {
  * return nullptr.
  */
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
-    /*
-     * TODO: Implement how moves your AI should play here. You should first
-     * process the opponent's opponents move before calculating your own move
-     */
     
-    // Random player
-    /*
     board.doMove(opponentsMove, otherSide);
     
+    return doRandomMove();
+    //return doHeuristicMove();
+    
+}
+
+/*
+ * Returns a random valid next move.
+ */
+Move *Player::doRandomMove() 
+{
     vector<Move*> moves;
        
     if (board.hasMoves(side))
@@ -87,14 +91,17 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     }
    
     return nullptr;
-    */
-    
-    // Heuristic player
-    
-    board.doMove(opponentsMove, otherSide);
-    
+}
+
+/*
+ * Returns a valid next move using a heuristic function based on
+ * position on the board and resulting difference in number of stones.
+ * Enough to consistently beat SimplePlayer
+ */
+Move *Player::doHeuristicMove() 
+{
     map<int, Move*> moves;
-       
+
     if (board.hasMoves(side))
     {
         for (int x = 0; x < 8; x++)
@@ -104,13 +111,15 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                 Move *m = new Move(x, y);
                 if (board.checkMove(m, side))
                 {
-                    moves[board.scores[x][y]] = m;
+                    Board *b = board.copy();
+                    b->doMove(m, side);
+                    int diffCount = b->count(side) - b->count(otherSide);
+                    delete b;
+                    moves[board.scores[x][y] + diffCount] = m;
                 }
             }
         }
         
-        map<int, Move*>::iterator it;
-    
         Move * best = moves.rbegin()->second;
         
         board.doMove(best, side);
