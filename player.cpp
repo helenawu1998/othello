@@ -57,9 +57,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     
     board.doMove(opponentsMove, otherSide);
     
-    return doRandomMove();
+    //return doRandomMove();
     //return doHeuristicMove();
     
+    // Minimax + Heuristics Implementation
+	return doMinimaxMove(opponentsMove);
 }
 
 /*
@@ -127,4 +129,85 @@ Move *Player::doHeuristicMove()
     }
    
     return nullptr;
+}
+
+/* Finds the next possible states for a node for 1 level down to assist with
+ * the doMinimaxMove function.
+ */
+void Player::sim_states(Node* n, Side played_side)
+{
+	for (int x = 0; x < 8; x++)
+	{
+		for (int y = 0; y < 8; y++)
+		{
+			 Move *m = new Move(x, y);
+			 if (n->board->checkMove(m, played_side))
+			 {
+			 	// Create child node
+			 	Node *node = new Node(n->board->copy(), m, played_side);
+			 	node->board->doMove(m, played_side);
+			 	int score = node->board->getScore(this->side, otherSide, played_side, m, testingMinimax);
+			 	if (score < n->min_score)
+					n->min_score = score;
+			 	// Add node to children of the original node n
+				n->children.push_back(node);
+			 }
+			
+		}
+	}
+}
+
+/* Returns a valid move based on a 2-ply decision making tree with 
+ * move position and difference in stones heuristics 
+ */
+Move *Player::doMinimaxMove(Move* opponentsMove) {
+	  if (board.hasMoves(side))
+    {
+		// Parent Node
+        Node * n = new Node(board.copy(), opponentsMove, otherSide);
+        
+        // 1-Ply
+        sim_states(n, side);
+        // 2-Ply
+        for (int i = 0; i < n->children.size(); i++)
+        {
+			sim_states(n->children[i], otherSide);
+			
+		}
+		// Find minimax
+		int max = -10000000;
+		Move* best;
+		for (int i = 0; i < n->children.size(); i++)
+		{
+			if (n->children[i]->min_score >= max)
+			{
+				max = n->children[i]->min_score;
+				best = n->children[i]->last_move;
+			}
+				
+		}
+		
+		delete n;
+		
+		board.doMove(best, side);
+        return best;
+    } 
+    return nullptr;   
+}
+
+Node::Node(Board *b, Move *m, Side s){
+	min_score = 10000000;
+	board = b;
+	last_move = m;
+	move_side = s;
+}
+
+Node::~Node(){
+	delete board;
+	
+	for (unsigned int i = 0; i < children.size();i++)
+	{
+		delete children[i];
+	}
+	
 }

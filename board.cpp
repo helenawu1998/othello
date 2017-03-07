@@ -178,3 +178,17 @@ void Board::setBoard(char data[]) {
         }
     }
 }
+
+/* Totals the current score for a board state for the given side */
+int Board::getScore(Side side, Side otherSide, Side played_side, Move *m, bool testingMinimax)
+{
+	int diffCount = count(side) - count(otherSide);
+	int score = scores[m->x][m->y];
+	if (played_side != side)
+	{
+		score *= -1;
+	}
+	if (testingMinimax)
+		score = 0;
+	return score + diffCount;
+}

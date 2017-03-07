@@ -30,6 +30,7 @@ public:
     int count(Side side);
     int countBlack();
     int countWhite();
+    int getScore(Side side, Side otherSide, Side played_side, Move *m, bool testingMinimax);
 
     void setBoard(char data[]);
     
