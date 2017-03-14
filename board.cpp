@@ -192,3 +192,25 @@ int Board::getScore(Side side, Side otherSide, Side played_side, Move *m, bool t
 		score = 0;
 	return score + diffCount;
 }
+
+/*
+ *  Totals the current score and returns the score without worrying about the negative
+ */
+int Board::justGetScore(Side played_side, Move *m)
+{
+    Side other;
+    if (played_side == WHITE)
+    {
+        other = BLACK;
+    }
+    else
+    {
+        other = WHITE;
+    }
+    
+    int diffCount = count(played_side) - count(other);
+	int score = scores[m->x][m->y];
+	return score + diffCount;
+    
+}
+

@@ -31,7 +31,8 @@ public:
     int countBlack();
     int countWhite();
     int getScore(Side side, Side otherSide, Side played_side, Move *m, bool testingMinimax);
-
+    int justGetScore(Side played_side, Move *m);
+    
     void setBoard(char data[]);
     
     vector<Move> moves;

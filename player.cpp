@@ -133,6 +133,9 @@ Move *Player::doHeuristicMove()
     return nullptr;
 }
 
+/*
+ * Returns the best score for a node using recursion
+ */
 int Player::rec_minimax(Node* n, int depth)
 {
 	Side played_side;
@@ -147,9 +150,10 @@ int Player::rec_minimax(Node* n, int depth)
 		played_side = otherSide;
 		Max = INT_MAX;
 	}
-	// Base case return score
+    
+    // Base case return score
 	if (depth >= DEPTH)
-		return n->board->getScore(side, otherSide, played_side, n->last_move, testingMinimax);
+		return n->board->justGetScore(played_side, n->last_move);
 	// Find possible moves and use recursion to find max/min
 	for (int x = 0; x < 8; x++)
 	{
@@ -159,10 +163,8 @@ int Player::rec_minimax(Node* n, int depth)
 			if (n->board->checkMove(m, played_side))
 			{
 				Node* new_n = new Node(n->board->copy(), m, played_side);
-				if (depth % 2 == 0)
-					Max = max(Max, rec_minimax(new_n, depth + 1));
-				else 
-					Max = min(Max, rec_minimax(new_n, depth + 1));
+                new_n->board->doMove(m, played_side);
+				Max = max(Max, -rec_minimax(new_n, depth + 1));
 			}
 		}
 	}
@@ -212,7 +214,7 @@ Move *Player::doMinimaxMove(Move* opponentsMove) {
         sim_states(n, side);
         
         // Finding best move with max score, for even depths only
-        for (int i = 0; i < n->children.size(); i++)
+        for (unsigned int i = 0; i < n->children.size(); i++)
         {
 			int s = rec_minimax(n->children[i], DEPTH);
 			if (s > extreme)
@@ -222,7 +224,23 @@ Move *Player::doMinimaxMove(Move* opponentsMove) {
 			}
 		}
         
-        /*
+        //-------------alphabeta attempt-------------
+        
+        /* 
+        for (unsigned int i = 0; i < n->children.size(); i++)
+        {
+			int s = alphabeta(n->children[i], 0, INT_MIN, INT_MAX, false);
+			if (s > extreme)
+			{
+				extreme = s;
+				best = n->children[i]->last_move;
+			}
+		}
+        */
+        
+        //-------------Old 2-ply non-recursive minimax-------------
+        
+        /* 
         // 2-Ply
         for (int i = 0; i < n->children.size(); i++)
         {
@@ -242,12 +260,79 @@ Move *Player::doMinimaxMove(Move* opponentsMove) {
 				
 		}
 		*/
+        
 		delete n;
 		
 		board.doMove(best, side);
         return best;
     } 
     return nullptr;   
+}
+
+/*
+ * Returns minimax score with alpha beta pruning
+ */ 
+int Player::alphabeta(Node *n, int depth, int alpha, int beta, bool maximizingPlayer)
+{
+    Side played_side;
+
+	if (depth % 2 == 0)
+	{
+		played_side = side;
+	}
+	else
+	{
+		played_side = otherSide;
+	}
+    
+    //basecase
+    if (depth == DEPTH)
+    {
+        return n->board->justGetScore(played_side, n->last_move);
+    }
+    
+    //making children
+    for (int x = 0; x < 8; x++)
+	{
+		for (int y = 0; y < 8; y++)
+		{
+			Move *m = new Move(x, y);
+			if (n->board->checkMove(m, played_side))
+			{
+				Node* new_n = new Node(n->board->copy(), m, played_side);
+				n->children.push_back(new_n);
+			}
+		}
+	}
+    
+    if (maximizingPlayer)
+    {
+        int v = INT_MIN;
+        for (unsigned int i = 0; i < n->children.size(); i++)
+        {
+            v = max(v, alphabeta(n->children[i], depth + 1, alpha, beta, false));
+            alpha = max(alpha, v);
+            if (beta <= alpha)
+            {
+                break;
+            }
+        }
+        return v;
+    }
+    else
+    {
+        int v = INT_MAX;
+        for (unsigned int i = 0; i < n->children.size(); i++)
+        {
+            v = min(v, alphabeta(n->children[i], depth + 1, alpha, beta, true));
+            beta = min(beta, v);
+            if (beta <= alpha)
+            {
+                break;
+            }
+        }
+        return v;
+    }
 }
 
 Node::Node(Board *b, Move *m, Side s){
