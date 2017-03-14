@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <map>
+#include <algorithm>
+#include <climits>
 
 using namespace std;
 
@@ -131,6 +133,43 @@ Move *Player::doHeuristicMove()
     return nullptr;
 }
 
+int Player::rec_minimax(Node* n, int depth)
+{
+	Side played_side;
+	int Max;
+	if (depth % 2 == 0)
+	{
+		played_side = side;
+		Max = INT_MIN;
+	}
+	else
+	{
+		played_side = otherSide;
+		Max = INT_MAX;
+	}
+	// Base case return score
+	if (depth >= DEPTH)
+		return n->board->getScore(side, otherSide, played_side, n->last_move, testingMinimax);
+	// Find possible moves and use recursion to find max/min
+	for (int x = 0; x < 8; x++)
+	{
+		for (int y = 0; y < 8; y++)
+		{
+			Move *m = new Move(x, y);
+			if (n->board->checkMove(m, played_side))
+			{
+				Node* new_n = new Node(n->board->copy(), m, played_side);
+				if (depth % 2 == 0)
+					Max = max(Max, rec_minimax(new_n, depth + 1));
+				else 
+					Max = min(Max, rec_minimax(new_n, depth + 1));
+			}
+		}
+	}
+	return Max;
+	
+}
+
 /* Finds the next possible states for a node for 1 level down to assist with
  * the doMinimaxMove function.
  */
@@ -165,9 +204,25 @@ Move *Player::doMinimaxMove(Move* opponentsMove) {
     {
 		// Parent Node
         Node * n = new Node(board.copy(), opponentsMove, otherSide);
+        int extreme;
+        extreme = INT_MIN;
+        Move* best;
         
         // 1-Ply
         sim_states(n, side);
+        
+        // Finding best move with max score, for even depths only
+        for (int i = 0; i < n->children.size(); i++)
+        {
+			int s = rec_minimax(n->children[i], DEPTH);
+			if (s > extreme)
+			{
+				extreme = s;
+				best = n->children[i]->last_move;
+			}
+		}
+        
+        /*
         // 2-Ply
         for (int i = 0; i < n->children.size(); i++)
         {
@@ -186,7 +241,7 @@ Move *Player::doMinimaxMove(Move* opponentsMove) {
 			}
 				
 		}
-		
+		*/
 		delete n;
 		
 		board.doMove(best, side);
